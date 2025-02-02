@@ -21,17 +21,16 @@ export default function UnsubscribePageClient({ slug }: { slug: string }) {
 
         (async () => {
             try {
-                console.log(`Enviando solicitud de desuscripción para ID: ${id}`);
                 const response = await updateDesuscrito(id);
 
                 if (response.success) {
                     localStorage.setItem("hasUnsubscribed", "true");
                     console.log("Desuscripción exitosa.");
                 } else {
-                    console.log("Error en la desuscripción:", response.message);
+                    console.log("Error: ", response.message);
                 }
             } catch (error) {
-                console.error("Error en la solicitud de desuscripción:", error);
+                console.error("[Error]: ", error);
             }
         })();
     }, [slug]);
