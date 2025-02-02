@@ -6,48 +6,35 @@ import styles from "./page.module.scss"
 import { updateDesuscrito } from "@/app/actions/sheets";
 
 export default function UnsubscribePageClient({ slug }: { slug: string }) {
-    const id = parseInt(slug, 10);
-
     useEffect(() => {
-        // Verificar si ya se ha desuscrito antes
-        const isAlreadyUnsubscribed = localStorage.getItem('hasUnsubscribed');
-        // console.log('Estado de desuscripción en localStorage:', isAlreadyUnsubscribed);
+        if (typeof window === "undefined") return; // Evitar ejecución en SSR
 
-        // Si ya está desuscrito, mostrar mensaje sin hacer nada
-        if (isAlreadyUnsubscribed === 'true') {
-            // setMessage("Ya estás desuscrito. No es necesario realizar más acciones.");
+        const id = parseInt(slug, 10);
+        if (isNaN(id)) return; // Evitar IDs inválidos
+
+        const isAlreadyUnsubscribed = localStorage.getItem("hasUnsubscribed");
+
+        if (isAlreadyUnsubscribed === "true") {
+            console.log("El usuario ya está desuscrito. No se enviará otra solicitud.");
             return;
         }
 
-        // Si no está desuscrito, proceder con la desuscripción
-        const unsubscribe = async () => {
+        (async () => {
             try {
-                // console.log("Llamando a updateDesuscrito...");
+                console.log(`Enviando solicitud de desuscripción para ID: ${id}`);
                 const response = await updateDesuscrito(id);
 
-                // console.log("Respuesta de desuscripción:", response);  // Log para ver la respuesta
-
                 if (response.success) {
-                    // Guardar en localStorage que el usuario ya se desuscribió
-                    localStorage.setItem('hasUnsubscribed', 'true');
-                    // setMessage("Te has desuscrito correctamente.");
-                    // console.log("Te has desuscrito correctamente.");
+                    localStorage.setItem("hasUnsubscribed", "true");
+                    console.log("Desuscripción exitosa.");
                 } else {
-                    // setMessage(`No se pudo desuscribir: ${response.message}`);
-                    console.log("Error:", response.message);
+                    console.log("Error en la desuscripción:", response.message);
                 }
             } catch (error) {
-                console.error('Error:', error);
-                // setMessage("Hubo un error al intentar desuscribirte. Por favor, inténtalo nuevamente.");
-            } finally {
+                console.error("Error en la solicitud de desuscripción:", error);
             }
-        };
-
-        // Ejecutar la función de desuscripción solo si no ha sido realizada antes
-        if (isAlreadyUnsubscribed !== 'true') {
-            unsubscribe();
-        }
-    }, [id]);
+        })();
+    }, [slug]);
 
     return (
         <section className={styles["container-thanks-page"]}>
