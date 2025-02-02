@@ -56,6 +56,8 @@ export const updateDesuscrito = async (id: number): Promise<ApiResponse> => {
             requestBody: { values: updatedRows },
         });
 
+        await fetch('https://strongwood-dashboard.vercel.app/api/revalidate', { method: 'GET', });
+
         return { success: true, message: `Se actualizó el valor de desuscrito a 1 para el ID ${id}.` };
     } catch (error) {
         console.error('Error catch: ', error);
