@@ -25,6 +25,8 @@ export default function FooterComponent() {
                 </div>
                 <div className={styles["secondary-footer"]}>
                     <small>{data.footer.company}</small>
+                    <Link style={{fontSize: "12px"}} href={"/politica-privacidad"}>Politica y privacidad</Link>
+                    <Link style={{fontSize: "12px"}} href={"/condiciones"}>Condiciones</Link>
                 </div>
             </div>
         </footer>
