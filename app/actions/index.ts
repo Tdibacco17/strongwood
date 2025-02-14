@@ -1,8 +1,30 @@
 'use server'
 import { template } from "@/utils/templateHtml";
 import nodemailer from "nodemailer"
+import { google } from "googleapis";
+
+// Configuración de OAuth2 con Google
+const oAuth2Client = new google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    "https://developers.google.com/oauthplayground"
+);
+
+oAuth2Client.setCredentials({
+    refresh_token: process.env.GOOGLE_REFRESH_TOKEN,
+});
 
 export const ContactFormAction = async (formdata: FormData, gRecaptchaToken: string): Promise<{ success: boolean }> => {
+    if (!process.env.EMAIL_USERNAME || !process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET || !process.env.GOOGLE_REFRESH_TOKEN) {
+        throw new Error("Faltan variables de entorno para la configuración de OAuth2");
+    }
+    const accessTokenResponse = await oAuth2Client.getAccessToken();
+    const accessToken = accessTokenResponse.token;
+
+    if (!accessToken) {
+        throw new Error("No se pudo obtener el access token");
+    }
+
     const secretKey = process.env.RECAPTCHA_SECRET_KEY;
 
     const formSecret = `secret=${secretKey}&response=${gRecaptchaToken}`;
@@ -39,21 +61,32 @@ export const ContactFormAction = async (formdata: FormData, gRecaptchaToken: str
             const contentHtml = template({ name, email, phone, coment, service });
 
             const transporter = nodemailer.createTransport({
-                host: `${process.env.EMAIL_SERVICE}`,
-                port: 465,
-                secure: true,
+                service: "gmail",
                 auth: {
-                    user: `${process.env.EMAIL_USERNAME}`,
-                    pass: `${process.env.EMAIL_PASSWORD}`,
+                    type: "OAuth2",
+                    user: process.env.EMAIL_USERNAME,
+                    clientId: process.env.GOOGLE_CLIENT_ID,
+                    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+                    refreshToken: process.env.GOOGLE_REFRESH_TOKEN,
+                    accessToken,
                 },
             });
+            // const transporter = nodemailer.createTransport({
+            //     host: `${process.env.EMAIL_SERVICE}`,
+            //     port: 465,
+            //     secure: true,
+            //     auth: {
+            //         user: `${process.env.EMAIL_USERNAME}`,
+            //         pass: `${process.env.EMAIL_PASSWORD}`,
+            //     },
+            // });
 
             // Verificamos la configuración del servidor de correo
             await transporter.verify();
 
             // Enviamos el correo
             const info = await transporter.sendMail({
-                from: process.env.EMAIL_USERNAME,
+                from: `Strongwood <${process.env.EMAIL_USERNAME}>`,
                 to: process.env.EMAIL_USERNAME,
                 subject: "Contacto - Pagína web",
                 html: contentHtml,
