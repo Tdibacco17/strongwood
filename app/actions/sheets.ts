@@ -80,6 +80,7 @@ export const updateOpenCount = async (id: number): Promise<ApiResponse> => {
     if (rows.length === 0) throw new Error(`No se encontraron datos en la hoja.`);
 
     let rowFound = false;
+    let updated = false;
 
     // Actualizamos el contador de "open" en la columna 4 (índice 3)
     const updatedRows = rows.map((row) => {
@@ -88,7 +89,12 @@ export const updateOpenCount = async (id: number): Promise<ApiResponse> => {
         if (rowId === id) {
             rowFound = true;
             const currentOpen = row[3] ? parseInt(row[3].toString().trim(), 10) : 0;
-            row[3] = (currentOpen + 1).toString();
+            // row[3] = (currentOpen + 1).toString();
+            if (currentOpen === 0) {
+                // Solo incrementamos si el valor actual es 0.
+                row[3] = (currentOpen + 1).toString();
+                updated = true;
+            }
         }
         return row;
     });
@@ -97,13 +103,16 @@ export const updateOpenCount = async (id: number): Promise<ApiResponse> => {
         return { success: false, message: `El ID ${id} no se encontró en la hoja.` };
     }
 
-    // Actualizamos la hoja con los nuevos datos
-    await sheets.spreadsheets.values.update({
-        spreadsheetId,
-        range,
-        valueInputOption: "RAW",
-        requestBody: { values: updatedRows },
-    });
-
-    return { success: true, message: `Se incrementó el contador de open para el ID ${id}.` };
+    if (updated) {
+        // Actualizamos la hoja con los nuevos datos
+        await sheets.spreadsheets.values.update({
+            spreadsheetId,
+            range,
+            valueInputOption: "RAW",
+            requestBody: { values: updatedRows },
+        });
+        return { success: true, message: `Se incrementó el contador de open para el ID ${id}.` };
+    } else {
+        return { success: true, message: `No se actualizó el contador porque ya era distinto de 0 para el ID ${id}.` };
+    }
 };
