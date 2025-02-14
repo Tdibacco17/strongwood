@@ -3,7 +3,8 @@ import { sheets } from "@/lib/googleSheets";
 
 export type ApiResponse = { success: boolean, message: string }
 
-const range = 'sheet1!A:R'; // COLUMANS DONDE ESTAN LOS DATOS EN EL SHEET
+const range = 'filtrados!A:J';
+// COLUMANS DONDE ESTAN LOS DATOS EN EL SHEET
 
 export const updateDesuscrito = async (id: number): Promise<ApiResponse> => {
     const spreadsheetId = process.env.SPREADSHEET_ID;
@@ -63,4 +64,46 @@ export const updateDesuscrito = async (id: number): Promise<ApiResponse> => {
         console.error('Error catch: ', error);
         return { success: false, message: "Error al actualizar desuscrito en Google Sheets" };
     }
+};
+
+export const updateOpenCount = async (id: number): Promise<ApiResponse> => {
+    const spreadsheetId = process.env.SPREADSHEET_ID;
+    if (!spreadsheetId) throw new Error(`SPREADSHEET_ID no está definido`);
+
+    // Obtener los datos actuales de la hoja
+    const response = await sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range,
+    });
+
+    const rows = response.data.values || [];
+    if (rows.length === 0) throw new Error(`No se encontraron datos en la hoja.`);
+
+    let rowFound = false;
+
+    // Actualizamos el contador de "open" en la columna 4 (índice 3)
+    const updatedRows = rows.map((row) => {
+        if (!row[0]) return row; // Ignorar filas sin ID
+        const rowId = parseInt(row[0].toString().trim(), 10);
+        if (rowId === id) {
+            rowFound = true;
+            const currentOpen = row[3] ? parseInt(row[3].toString().trim(), 10) : 0;
+            row[3] = (currentOpen + 1).toString();
+        }
+        return row;
+    });
+
+    if (!rowFound) {
+        return { success: false, message: `El ID ${id} no se encontró en la hoja.` };
+    }
+
+    // Actualizamos la hoja con los nuevos datos
+    await sheets.spreadsheets.values.update({
+        spreadsheetId,
+        range,
+        valueInputOption: "RAW",
+        requestBody: { values: updatedRows },
+    });
+
+    return { success: true, message: `Se incrementó el contador de open para el ID ${id}.` };
 };

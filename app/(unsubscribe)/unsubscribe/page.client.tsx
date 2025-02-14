@@ -12,7 +12,7 @@ export default function UnsubscribePageClient({ slug }: { slug: string }) {
         const id = parseInt(slug, 10);
         if (isNaN(id)) return; // Evitar IDs inválidos
 
-        const isAlreadyUnsubscribed = localStorage.getItem("hasUnsubscribed");
+        const isAlreadyUnsubscribed = localStorage.getItem("71jascjal");
 
         if (isAlreadyUnsubscribed === "true") {
             console.log("El usuario ya está desuscrito. No se enviará otra solicitud.");
@@ -24,7 +24,7 @@ export default function UnsubscribePageClient({ slug }: { slug: string }) {
                 const response = await updateDesuscrito(id);
 
                 if (response.success) {
-                    localStorage.setItem("hasUnsubscribed", "true");
+                    localStorage.setItem("71jascjal", "true");
                     console.log("Desuscripción exitosa.");
                 } else {
                     console.log("Error: ", response.message);
