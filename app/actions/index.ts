@@ -42,7 +42,7 @@ export const ContactFormAction = async (formdata: FormData, gRecaptchaToken: str
             throw new Error(`Network responseponse was not ok: ${response.status}`);
         }
         const responseData = await response.json();
-        
+
         // Validar la respuesta de reCAPTCHA
         if (responseData.success && responseData.score > 0.5) {
             console.log("Score: ", responseData.score);
