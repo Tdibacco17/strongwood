@@ -86,7 +86,7 @@ export const ContactFormAction = async (formdata: FormData, gRecaptchaToken: str
 
             // Enviamos el correo
             const info = await transporter.sendMail({
-                from: `Strongwood <${process.env.EMAIL_USERNAME}>`,
+                from: process.env.EMAIL_USERNAME,
                 to: process.env.EMAIL_USERNAME,
                 subject: "Contacto - Pagína web",
                 html: contentHtml,
