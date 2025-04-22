@@ -34,6 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* facebook pixel */}
         <Script
           id="facebook-pixel"
           strategy="afterInteractive"
@@ -51,6 +52,16 @@ export default function RootLayout({
           fbq('track', 'PageView');
                 `}
         </Script>
+        <Script id="gtm" strategy="afterInteractive">
+          {`
+            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-N89WFSBK');
+          `}
+        </Script>
+
         <noscript>
           <Image height="1" width="1" style={{ display: "none" }} alt='fbqPixel'
             src={"https://www.facebook.com/tr?id=1167956061337350&ev=PageView&noscript=1"}
@@ -58,11 +69,20 @@ export default function RootLayout({
         </noscript>
       </head>
       <body className={`${roboto.className} ${lato.variable} ${montserrat.variable}`}>
-      <GoogleProvider>
-        <main id="top">
-          {children}
-        </main>
-      </GoogleProvider>
+        {/* Google Tag Manager noscript */}
+        <noscript>
+          <iframe
+            src="https://www.googletagmanager.com/ns.html?id=GTM-N89WFSBK"
+            height="0"
+            width="0"
+            style={{ display: "none", visibility: "hidden" }}
+          ></iframe>
+        </noscript>
+        <GoogleProvider>
+          <main id="top">
+            {children}
+          </main>
+        </GoogleProvider>
       </body>
     </html>
   );
